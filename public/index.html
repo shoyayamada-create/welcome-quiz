@@ -615,9 +615,10 @@ function showRevealResult(s) {
   });
   const pts = s.players[myName] || 0;
   updateScoreBadge(s);
-  if (!myAns) showResultMsg('timeout', null, s);
-  else if (myAns.choice === q.correct) showResultMsg('correct', pts, s);
-  else showResultMsg('wrong', q.correct, s);
+  const correctText = q.choices[q.correct]; // 正解の選択肢テキスト
+  if (!myAns) showResultMsg('timeout', { correctText }, s);
+  else if (myAns.choice === q.correct) showResultMsg('correct', { pts, correctText }, s);
+  else showResultMsg('wrong', { correctIndex: q.correct, correctText }, s);
 }
 
 function showResultMsg(type, data, s) {
@@ -626,6 +627,9 @@ function showResultMsg(type, data, s) {
   overlay.classList.add('show');
   box.className = 'result-box';
   const hidden = s && isScoreHidden(s);
+  const correctLabel = data && data.correctText
+    ? `<div style="margin-top:12px;padding:10px 16px;background:rgba(255,255,255,0.1);border-radius:10px;font-size:0.95rem;">✅ 正解は「<strong>${data.correctText}</strong>」でした！</div>`
+    : '';
   if (type === 'pending') {
     box.classList.add('timeout-res');
     document.getElementById('result-emoji').textContent = '⏳';
@@ -636,20 +640,20 @@ function showResultMsg(type, data, s) {
     document.getElementById('result-emoji').textContent = '🎉';
     document.getElementById('result-title').textContent = '正解！';
     if (hidden) {
-      document.getElementById('result-points').innerHTML = `<span class="result-big-pts" style="font-size:2rem;letter-spacing:4px">🔒 ???pt</span><div style="font-size:0.8rem;margin-top:8px;opacity:0.6">最終発表までのお楽しみ！</div>`;
+      document.getElementById('result-points').innerHTML = `<span class="result-big-pts" style="font-size:2rem;letter-spacing:4px">🔒 ???pt</span><div style="font-size:0.8rem;margin-top:8px;opacity:0.6">最終発表までのお楽しみ！</div>${correctLabel}`;
     } else {
-      document.getElementById('result-points').innerHTML = `<span class="result-big-pts">${data.toLocaleString()}pt</span>`;
+      document.getElementById('result-points').innerHTML = `<span class="result-big-pts">${data.pts.toLocaleString()}pt</span>${correctLabel}`;
     }
   } else if (type === 'wrong') {
     box.classList.add('wrong-res');
     document.getElementById('result-emoji').textContent = '😢';
     document.getElementById('result-title').textContent = '不正解...';
-    document.getElementById('result-points').textContent = `正解は ${'ABCD'[data]} でした！`;
+    document.getElementById('result-points').innerHTML = correctLabel;
   } else if (type === 'timeout') {
     box.classList.add('timeout-res');
     document.getElementById('result-emoji').textContent = '⏰';
     document.getElementById('result-title').textContent = '時間切れ！';
-    document.getElementById('result-points').textContent = '次は間に合わせよう！';
+    document.getElementById('result-points').innerHTML = `次は間に合わせよう！${correctLabel}`;
   }
 }
 
