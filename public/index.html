@@ -145,8 +145,8 @@
   .score-pts-label { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
 
   /* FINAL */
-  #screen-final { background: radial-gradient(ellipse at center, #1a2a0e, #0a0a1a); align-items: center; justify-content: center; text-align: center; }
-  .final-body { padding: 40px 20px; max-width: 600px; position: relative; z-index: 1; }
+  #screen-final { background: radial-gradient(ellipse at center, #1a2a0e, #0a0a1a); align-items: center; justify-content: flex-start; text-align: center; overflow-y: auto; }
+  .final-body { padding: 40px 20px; max-width: 600px; position: relative; z-index: 1; width: 100%; }
   .final-crown { font-size: 8rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
   @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-20px)} }
   .final-winner-label { font-size: 1rem; color: rgba(255,255,255,0.6); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
@@ -335,6 +335,11 @@
     <div class="final-winner-name" id="final-winner-name">???</div>
     <div class="final-winner-pts" id="final-winner-pts"></div>
     <div class="final-top3" id="final-top3"></div>
+    <!-- 管理者用全員ランキング -->
+    <div id="final-admin-ranking" style="display:none;width:100%;max-width:500px;margin:0 auto 24px;">
+      <div style="font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#FFD700;margin-bottom:12px;text-align:left">👑 全員の最終スコア（管理者のみ表示）</div>
+      <div id="final-all-scores"></div>
+    </div>
     <button class="btn btn-secondary" onclick="doReset()">🔄 もう一度</button>
   </div>
 </div>
@@ -688,6 +693,25 @@ function renderFinal(s) {
       <div class="final-podium-name">${name}</div>
       <div class="final-podium-pts">${score.toLocaleString()}pt</div>
     </div>`).join('');
+
+  // 管理者のみ：全員スコア一覧を表示
+  const adminRanking = document.getElementById('final-admin-ranking');
+  if (myRole === 'admin') {
+    adminRanking.style.display = 'block';
+    const medals = ['🥇','🥈','🥉'];
+    const rankClass = ['gold','silver','bronze'];
+    document.getElementById('final-all-scores').innerHTML = sorted.map(([name, score], i) => `
+      <div class="score-row" style="animation-delay:${i*0.06}s;margin-bottom:8px">
+        <div class="score-rank ${rankClass[i]||''}">${medals[i]||(i+1)}</div>
+        <div class="score-name">${name}</div>
+        <div style="text-align:right">
+          <div class="score-pts">${score.toLocaleString()}</div>
+          <div class="score-pts-label">pt</div>
+        </div>
+      </div>`).join('');
+  } else {
+    adminRanking.style.display = 'none';
+  }
   // Confetti
   const c = document.getElementById('confetti');
   c.innerHTML = '';
