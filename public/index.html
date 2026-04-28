@@ -541,7 +541,14 @@ function doShowScoreboard() {
   showScreen('scoreboard');
   document.getElementById('back-from-score').style.display = 'block';
 }
-function doShowFinal() { send({ type: 'show_final' }); }
+function doShowFinal() {
+  send({ type: 'show_final' });
+  // 管理者も最終結果画面に遷移
+  setTimeout(() => {
+    renderFinal(state);
+    showScreen('final');
+  }, 100);
+}
 function doReset() { if(confirm('本当にリセットしますか？')) send({ type: 'reset' }); }
 function backFromScore() { showScreen('admin'); }
 
@@ -663,23 +670,32 @@ function renderScoreboard(s) {
   const medals = ['🥇','🥈','🥉'];
   const rankClass = ['gold','silver','bronze'];
   const hideScores = isScoreHidden(s);
-  document.getElementById('score-list').innerHTML = sorted.map(([name, score], i) => `
-    <div class="score-row" style="animation-delay:${i*0.08}s">
-      <div class="score-rank ${rankClass[i]||''}">${medals[i]||(i+1)}</div>
+
+  // ???モード：参加者には順不同でシャッフルして表示
+  const displayList = (hideScores && myRole === 'player')
+    ? [...Object.entries(s.players)].sort(() => Math.random() - 0.5)
+    : sorted;
+
+  document.getElementById('score-list').innerHTML = displayList.map(([name, score], i) => {
+    const rank = hideScores && myRole === 'player' ? i : sorted.findIndex(([n]) => n === name);
+    return `
+    <div class="score-row" style="animation-delay:${i*0.08}s;${hideScores && myRole==='player' ? 'background:rgba(123,45,139,0.15);border:1px solid rgba(123,45,139,0.3)' : ''}">
+      <div class="score-rank ${rankClass[rank]||''}">${hideScores && myRole==='player' ? '🎲' : (medals[rank]||(rank+1))}</div>
       <div class="score-name">${name}${name===myName?' 👈':''}</div>
       <div style="text-align:right">
-        ${hideScores
+        ${hideScores && myRole==='player'
           ? `<div class="score-pts" style="letter-spacing:3px;background:linear-gradient(90deg,#7B2D8B,#FF4D6D);-webkit-background-clip:text;-webkit-text-fill-color:transparent">???</div>`
           : `<div class="score-pts">${score.toLocaleString()}</div><div class="score-pts-label">pt</div>`
         }
       </div>
-    </div>`).join('') || '<div style="color:rgba(255,255,255,0.4)">まだ参加者がいません</div>';
+    </div>`;
+  }).join('') || '<div style="color:rgba(255,255,255,0.4)">まだ参加者がいません</div>';
 
   // 隠れている場合は煽りメッセージ追加
   if (hideScores && myRole === 'player') {
     const hint = document.createElement('div');
     hint.style.cssText = 'text-align:center;margin-top:20px;padding:16px;background:rgba(123,45,139,0.2);border:1px solid rgba(123,45,139,0.4);border-radius:12px;font-size:0.9rem;color:rgba(255,255,255,0.7);';
-    hint.innerHTML = '🔒 スコアは最終発表まで非公開です！<br>最後まで諦めずに！';
+    hint.innerHTML = '🔒 順位・スコアは最終発表まで非公開！<br>🎲 表示順はランダムです';
     document.getElementById('score-list').after(hint);
   }
 }
