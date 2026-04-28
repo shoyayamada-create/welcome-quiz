@@ -592,7 +592,7 @@ function submitAnswer(choice) {
 }
 
 // スコアを隠すべきか判定（3問目以降は参加者に非表示）
-const SCORE_HIDE_FROM_Q = 2; // 0-indexed: 2 = 3問目
+const SCORE_HIDE_FROM_Q = 7; // 0-indexed: 7 = 8問目
 function isScoreHidden(s) {
   return myRole === 'player' && s.currentQIndex >= SCORE_HIDE_FROM_Q;
 }
