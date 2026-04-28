@@ -117,15 +117,15 @@
   .answer-q-text { font-size: 1.2rem; font-weight: 700; line-height: 1.5; margin-bottom: 16px; }
   .answer-timer-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
   .answer-timer-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--secondary)); border-radius: 4px; transition: width 0.1s linear; }
-  .answer-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; }
-  .answer-choice-btn { border-radius: 16px; border: none; padding: 20px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 0.95rem; color: white; transition: all 0.15s; text-align: center; min-height: 100px; }
+  .answer-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; align-content: stretch; }
+  .answer-choice-btn { border-radius: 16px; border: none; padding: 12px 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: clamp(0.8rem, 3.5vw, 1.05rem); color: white; transition: all 0.15s; text-align: center; min-height: 0; flex: 1; }
   .answer-choice-btn:active { transform: scale(0.96); }
   .answer-choice-btn.a { background: #e74c3c; } .answer-choice-btn.b { background: #3498db; } .answer-choice-btn.c { background: #2ecc71; } .answer-choice-btn.d { background: #f39c12; }
   .answer-choice-btn:disabled { opacity: 0.6; cursor: not-allowed; }
   .answer-choice-btn.selected { box-shadow: 0 0 0 4px white, 0 0 30px rgba(255,255,255,0.3); }
   .answer-choice-btn.correct-hi { box-shadow: 0 0 0 4px var(--green), 0 0 30px rgba(6,214,160,0.5); }
   .answer-choice-btn.wrong-hi { opacity: 0.4; }
-  .choice-btn-icon { font-size: 2.2rem; }
+  .choice-btn-icon { font-size: clamp(1.4rem, 5vw, 2rem); line-height: 1; }
 
   /* SCOREBOARD */
   #screen-scoreboard { background: linear-gradient(135deg, #0d0d2b, #1a0a2e); }
@@ -492,11 +492,13 @@ function updateAdminUI(s) {
   // Buttons
   const isQ = s.phase === 'question';
   const isR = s.phase === 'reveal';
+  const isS = s.phase === 'scoreboard';
+  const hasMoreQ = s.currentQIndex < s.questions.length - 1;
   const ansCount = Object.keys(s.answers).length;
-  document.getElementById('btn-next').style.display = (s.phase === 'waiting' || isR) && s.currentQIndex < s.questions.length - 1 ? 'inline-block' : 'none';
+  document.getElementById('btn-next').style.display = (s.phase === 'waiting' || isR || isS) && hasMoreQ ? 'inline-block' : 'none';
   document.getElementById('btn-reveal').style.display = isQ ? 'inline-block' : 'none';
   document.getElementById('btn-score').style.display = (isQ || isR) ? 'inline-block' : 'none';
-  document.getElementById('btn-final').style.display = isR && s.currentQIndex >= s.questions.length - 1 ? 'inline-block' : 'none';
+  document.getElementById('btn-final').style.display = (isR || isS) && !hasMoreQ ? 'inline-block' : 'none';
 
   if (isQ) {
     document.getElementById('admin-status-text').textContent = `Q${s.currentQIndex+1} 回答受付中 (${ansCount}/${pc}人回答済)`;
